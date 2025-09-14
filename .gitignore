@@ -99,3 +99,209 @@ service-account.json
 .mypy_cache/
 .dmypy.json
 dmypy.json
+
+# Terraform
+*.tfstate
+*.tfstate.*
+*.tfvars
+*.tfvars.json
+.terraform/
+.terraform.lock.hcl
+terraform.tfplan
+tfplan
+
+# Deployment secrets and configs
+infrastructure/terraform/terraform.tfvars
+infrastructure/terraform/.terraform/
+infrastructure/terraform/*.tfstate*
+infrastructure/terraform/tfplan
+
+# GCP deployment
+.gcp/
+gcp-credentials.json
+application_default_credentials.json
+
+# Backup files
+*.backup
+*.bak
+
+# FastAPI specific
+.pytest_cache/
+htmlcov/
+.coverage
+coverage.xml
+*.cover
+.hypothesis/
+
+# Celery
+celerybeat-schedule
+celerybeat.pid
+
+# Redis dumps
+dump.rdb
+
+# SQLAlchemy migrations (if using Alembic)
+# Uncomment if you want to ignore migration files
+# alembic/versions/*.py
+
+# API Keys and Secrets (additional patterns)
+**/secrets/
+**/credentials/
+**/*secret*
+**/*key*.json
+**/*credentials*.json
+.secrets/
+secrets.yaml
+secrets.yml
+
+# Production configs
+config/production.py
+config/production.yaml
+config/production.yml
+production.env
+
+# SSL certificates
+*.pem
+*.key
+*.crt
+*.cert
+*.p12
+*.pfx
+
+# Cloud Build
+.cloudbuild/
+cloudbuild-local.yaml
+
+# Local development overrides
+docker-compose.override.yml
+docker-compose.local.yml
+.env.override
+
+# Generated documentation
+docs/_build/
+site/
+
+# Monitoring and profiling
+*.prof
+*.pstats
+
+# Data files (if you store any locally)
+data/
+datasets/
+*.csv
+*.json.gz
+*.parquet
+
+# Temporary uploads
+uploads/
+tmp/
+temp/
+
+# IDE specific (additional)
+.fleet/
+*.sublime-*
+.vscode/settings.json
+.vscode/launch.json
+
+# macOS specific (additional)
+.AppleDouble
+.LSOverride
+Icon?
+
+# Windows specific
+*.lnk
+desktop.ini
+
+# Linux specific
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+
+# Package managers
+yarn.lock
+package-lock.json
+Pipfile.log
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+.nyc_output
+
+# ESLint cache
+.eslintcache
+
+# Optional npm cache directory
+.npm
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
+
+# Stores VSCode versions used for testing VSCode extensions
+.vscode-test
+#
+ Settlers of Stock specific
+# Market data cache files
+market_data_cache/
+*.market_data
+historical_data/
+
+# Generated reports and exports
+reports/
+exports/
+*.pdf
+*.xlsx
+
+# AI model cache
+model_cache/
+.vertex_ai_cache/
+
+# Stock analysis results
+analysis_results/
+backtest_results/
+
+# User uploaded files
+user_uploads/
+
+# Local configuration overrides
+local_settings.py
+local_config.yaml
+
+# Development databases
+dev.db
+test.db
+local.db
+
+# Jupyter notebook outputs
+*.ipynb
+
+# Financial data files
+*.fin
+*.stock
+*.market
+
+# Log files specific to the app
+app.log
+error.log
+access.log
+audit.log
+
+# Performance profiling
+*.profile
+performance_logs/
+
+# Local development scripts
+dev_scripts/
+local_dev/
+setup_local.sh
