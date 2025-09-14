@@ -1,0 +1,371 @@
+/* Sector Performance Chart Component Styles */
+
+.sector-performance-chart {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.chart-type-selector {
+  display: flex;
+  background: #f8f9fa;
+  border-bottom: 1px solid #e9ecef;
+  padding: 0;
+}
+
+.chart-type-selector button {
+  flex: 1;
+  padding: 12px 16px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  color: #6c757d;
+  transition: all 0.2s ease;
+  border-bottom: 3px solid transparent;
+}
+
+.chart-type-selector button:hover {
+  background: #e9ecef;
+  color: #495057;
+}
+
+.chart-type-selector button.active {
+  color: #667eea;
+  border-bottom-color: #667eea;
+  background: white;
+}
+
+.chart-content {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.chart-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #212529;
+}
+
+.chart-controls select {
+  padding: 8px 12px;
+  border: 1px solid #ced4da;
+  border-radius: 6px;
+  background: white;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+/* Bar Chart Styles */
+.bar-chart {
+  display: flex;
+  flex-direction: column;
+}
+
+.bars-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.bar-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.bar-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.sector-name {
+  font-weight: 500;
+  color: #212529;
+  font-size: 14px;
+}
+
+.performance-value {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.bar-container {
+  height: 24px;
+  position: relative;
+}
+
+.bar-background {
+  width: 100%;
+  height: 100%;
+  background: #f8f9fa;
+  border-radius: 4px;
+  position: relative;
+  overflow: hidden;
+}
+
+.bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+  min-width: 2px;
+}
+
+/* Heatmap Styles */
+.heatmap {
+  display: flex;
+  flex-direction: column;
+}
+
+.heatmap-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.heatmap-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.heatmap-label {
+  min-width: 150px;
+  font-weight: 500;
+  color: #212529;
+  font-size: 14px;
+}
+
+.heatmap-cells {
+  display: flex;
+  gap: 8px;
+  flex: 1;
+}
+
+.heatmap-cell {
+  flex: 1;
+  padding: 12px 8px;
+  text-align: center;
+  border-radius: 6px;
+  border: 1px solid #e9ecef;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.heatmap-cell:hover {
+  transform: scale(1.05);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.heatmap-legend {
+  display: flex;
+  justify-content: center;
+  gap: 32px;
+  padding: 16px;
+  background: #f8f9fa;
+  border-radius: 6px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.legend-label {
+  font-weight: 500;
+  color: #6c757d;
+  font-size: 14px;
+}
+
+/* Table Styles */
+.performance-table {
+  display: flex;
+  flex-direction: column;
+}
+
+.table-container {
+  overflow-x: auto;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+.performance-table table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+}
+
+.performance-table th,
+.performance-table td {
+  padding: 12px 16px;
+  text-align: left;
+  border-bottom: 1px solid #e9ecef;
+  font-size: 14px;
+}
+
+.performance-table th {
+  background: #f8f9fa;
+  font-weight: 600;
+  color: #495057;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.performance-table tbody tr:hover {
+  background: #f8f9fa;
+}
+
+.sector-name-cell {
+  font-weight: 500;
+  color: #212529;
+  min-width: 120px;
+}
+
+.momentum-bar {
+  position: relative;
+  width: 60px;
+  height: 20px;
+  background: #e9ecef;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.momentum-fill {
+  height: 100%;
+  border-radius: 10px;
+  transition: width 0.3s ease;
+}
+
+.momentum-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 11px;
+  font-weight: 600;
+  color: #212529;
+  z-index: 1;
+}
+
+.trend-badge {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+.trend-strong_up {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.trend-up {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.trend-sideways {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.trend-down {
+  background: #fecaca;
+  color: #991b1b;
+}
+
+.trend-strong_down {
+  background: #fee2e2;
+  color: #7f1d1d;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .chart-content {
+    padding: 16px;
+  }
+
+  .chart-header {
+    flex-direction: column;
+    gap: 16px;
+    align-items: flex-start;
+  }
+
+  .bar-label {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  .heatmap-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .heatmap-label {
+    min-width: auto;
+  }
+
+  .heatmap-cells {
+    width: 100%;
+  }
+
+  .table-container {
+    font-size: 12px;
+  }
+
+  .performance-table th,
+  .performance-table td {
+    padding: 8px 12px;
+  }
+
+  .momentum-bar {
+    width: 50px;
+    height: 16px;
+  }
+
+  .momentum-text {
+    font-size: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .chart-type-selector button {
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+
+  .heatmap-legend {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .performance-table th,
+  .performance-table td {
+    padding: 6px 8px;
+    font-size: 12px;
+  }
+}

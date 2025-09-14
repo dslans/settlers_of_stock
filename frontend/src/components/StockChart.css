@@ -1,0 +1,195 @@
+/* StockChart Component Styles */
+
+.stock-chart {
+  width: 100%;
+  margin: 0 auto;
+}
+
+.chart-controls {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.chart-controls > div {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chart-controls button {
+  font-size: 12px;
+  font-weight: 500;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.chart-controls button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.chart-controls button:active {
+  transform: translateY(0);
+}
+
+.chart-container {
+  position: relative;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.chart-container canvas {
+  border-radius: 8px;
+}
+
+.chart-info {
+  background: #f1f5f9;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 11px;
+  color: #64748b;
+  line-height: 1.4;
+}
+
+.chart-info div {
+  margin: 2px 0;
+}
+
+/* Loading state */
+.chart-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.chart-loading .spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #e5e7eb;
+  border-top: 2px solid #3b82f6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-right: 8px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Error state */
+.chart-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #ef4444;
+  text-align: center;
+}
+
+.chart-error .error-icon {
+  font-size: 24px;
+  margin-bottom: 8px;
+}
+
+.chart-error .error-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.chart-error .error-message {
+  font-size: 14px;
+  color: #6b7280;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .chart-controls {
+    padding: 12px;
+  }
+  
+  .chart-controls > div {
+    gap: 6px;
+  }
+  
+  .chart-controls button {
+    font-size: 11px;
+    padding: 4px 8px;
+  }
+  
+  .chart-container {
+    margin: 0 -4px;
+  }
+}
+
+@media (max-width: 640px) {
+  .chart-controls > div {
+    justify-content: flex-start;
+  }
+  
+  .chart-controls span {
+    width: 100%;
+    margin-bottom: 4px;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .chart-controls {
+    background: #1f2937;
+    border-color: #374151;
+  }
+  
+  .chart-container {
+    background: #1f2937;
+    border-color: #374151;
+  }
+  
+  .chart-info {
+    background: #374151;
+    color: #9ca3af;
+  }
+}
+
+/* Accessibility */
+.chart-controls button:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+.chart-controls button:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Animation for smooth transitions */
+.chart-container {
+  transition: all 0.3s ease;
+}
+
+.chart-controls button {
+  transition: all 0.2s ease;
+}
+
+/* Indicator-specific styles */
+.indicator-sma20 { border-left: 3px solid #3B82F6; }
+.indicator-sma50 { border-left: 3px solid #EF4444; }
+.indicator-ema12 { border-left: 3px solid #10B981; }
+.indicator-ema26 { border-left: 3px solid #F59E0B; }
+.indicator-rsi { border-left: 3px solid #8B5CF6; }
+.indicator-macd { border-left: 3px solid #EC4899; }
+.indicator-bollinger { border-left: 3px solid #8B5CF6; }
+.indicator-volume { border-left: 3px solid #6B7280; }

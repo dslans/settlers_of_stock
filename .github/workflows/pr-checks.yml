@@ -1,0 +1,418 @@
+name: Pull Request Checks
+
+on:
+  pull_request:
+    branches: [ main, develop ]
+    types: [opened, synchronize, reopened]
+
+env:
+  PYTHON_VERSION: '3.11'
+  NODE_VERSION: '18'
+
+jobs:
+  pr-validation:
+    name: PR Validation
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Validate PR title
+      uses: amannn/action-semantic-pull-request@v5
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        types: |
+          feat
+          fix
+          docs
+          style
+          refactor
+          perf
+          test
+          chore
+        requireScope: false
+
+    - name: Check for breaking changes
+      run: |
+        if git log --oneline ${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }} | grep -i "BREAKING CHANGE"; then
+          echo "⚠️ Breaking changes detected in this PR"
+          echo "breaking_changes=true" >> $GITHUB_ENV
+        else
+          echo "✅ No breaking changes detected"
+          echo "breaking_changes=false" >> $GITHUB_ENV
+        fi
+
+    - name: Comment on breaking changes
+      if: env.breaking_changes == 'true'
+      uses: actions/github-script@v6
+      with:
+        script: |
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: '⚠️ **Breaking Changes Detected**\n\nThis PR contains breaking changes. Please ensure:\n- [ ] Version is bumped appropriately\n- [ ] Migration guide is updated\n- [ ] Documentation reflects changes\n- [ ] Stakeholders are notified'
+          })
+
+  quick-tests:
+    name: Quick Tests
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        cache-dependency-path: frontend/package-lock.json
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v3
+      with:
+        version: "latest"
+
+    - name: Install backend dependencies
+      run: |
+        uv venv
+        source .venv/bin/activate
+        uv pip install -r backend/requirements.txt
+
+    - name: Install frontend dependencies
+      run: |
+        cd frontend
+        npm ci
+
+    - name: Run backend linting
+      run: |
+        source .venv/bin/activate
+        cd backend
+        python -m flake8 app tests --max-line-length=100 --ignore=E203,W503
+
+    - name: Run frontend linting
+      run: |
+        cd frontend
+        npm run lint
+
+    - name: Run backend type checking
+      run: |
+        source .venv/bin/activate
+        cd backend
+        python -m mypy app --ignore-missing-imports
+
+    - name: Run frontend type checking
+      run: |
+        cd frontend
+        npx tsc --noEmit
+
+    - name: Run quick backend tests
+      run: |
+        source .venv/bin/activate
+        cd backend
+        python -m pytest tests/ -v -m "unit and not slow" --maxfail=5
+
+    - name: Run quick frontend tests
+      run: |
+        cd frontend
+        npm test -- --watchAll=false --testPathIgnorePatterns=integration
+
+  code-coverage:
+    name: Code Coverage Check
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres
+          POSTGRES_DB: settlers_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        cache-dependency-path: frontend/package-lock.json
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v3
+      with:
+        version: "latest"
+
+    - name: Install backend dependencies
+      run: |
+        uv venv
+        source .venv/bin/activate
+        uv pip install -r backend/requirements.txt
+
+    - name: Install frontend dependencies
+      run: |
+        cd frontend
+        npm ci
+
+    - name: Set up environment variables
+      run: |
+        echo "DATABASE_URL=postgresql://postgres:postgres@localhost:5432/settlers_test" >> $GITHUB_ENV
+        echo "REDIS_URL=redis://localhost:6379" >> $GITHUB_ENV
+        echo "SECRET_KEY=test-secret-key-for-pr" >> $GITHUB_ENV
+        echo "ENVIRONMENT=test" >> $GITHUB_ENV
+
+    - name: Run backend tests with coverage
+      run: |
+        source .venv/bin/activate
+        cd backend
+        python -m pytest tests/ --cov=app --cov-report=xml --cov-report=term-missing -m "not slow and not external"
+
+    - name: Run frontend tests with coverage
+      run: |
+        cd frontend
+        npm run test:coverage
+
+    - name: Check backend coverage threshold
+      run: |
+        source .venv/bin/activate
+        cd backend
+        python -c "
+        import xml.etree.ElementTree as ET
+        tree = ET.parse('coverage.xml')
+        root = tree.getroot()
+        coverage = float(root.attrib['line-rate']) * 100
+        print(f'Backend coverage: {coverage:.1f}%')
+        if coverage < 85:
+            print('❌ Backend coverage below threshold (85%)')
+            exit(1)
+        else:
+            print('✅ Backend coverage meets threshold')
+        "
+
+    - name: Check frontend coverage threshold
+      run: |
+        cd frontend
+        node -e "
+        const coverage = require('./coverage/coverage-summary.json');
+        const lineCoverage = coverage.total.lines.pct;
+        console.log(\`Frontend coverage: \${lineCoverage}%\`);
+        if (lineCoverage < 80) {
+            console.log('❌ Frontend coverage below threshold (80%)');
+            process.exit(1);
+        } else {
+            console.log('✅ Frontend coverage meets threshold');
+        }
+        "
+
+    - name: Upload coverage reports
+      uses: codecov/codecov-action@v3
+      with:
+        files: ./backend/coverage.xml,./frontend/coverage/lcov.info
+        flags: pr-check
+        name: pr-coverage
+
+  dependency-check:
+    name: Dependency Security Check
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+
+    - name: Check Python dependencies for vulnerabilities
+      run: |
+        pip install safety
+        cd backend
+        safety check -r requirements.txt --json --output safety-report.json || true
+
+    - name: Check Node.js dependencies for vulnerabilities
+      run: |
+        cd frontend
+        npm audit --audit-level=moderate --json > npm-audit-report.json || true
+
+    - name: Upload dependency check results
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: dependency-check-results
+        path: |
+          backend/safety-report.json
+          frontend/npm-audit-report.json
+
+  performance-impact:
+    name: Performance Impact Check
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres
+          POSTGRES_DB: settlers_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+    - name: Checkout base branch
+      uses: actions/checkout@v4
+      with:
+        ref: ${{ github.event.pull_request.base.ref }}
+        path: base
+
+    - name: Checkout PR branch
+      uses: actions/checkout@v4
+      with:
+        ref: ${{ github.event.pull_request.head.ref }}
+        path: pr
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v3
+      with:
+        version: "latest"
+
+    - name: Run performance tests on base branch
+      run: |
+        cd base/backend
+        uv venv
+        source .venv/bin/activate
+        uv pip install -r requirements.txt
+        python -m pytest tests/test_performance.py --benchmark-only --benchmark-json=../base-benchmark.json
+
+    - name: Run performance tests on PR branch
+      run: |
+        cd pr/backend
+        uv venv
+        source .venv/bin/activate
+        uv pip install -r requirements.txt
+        python -m pytest tests/test_performance.py --benchmark-only --benchmark-json=../pr-benchmark.json
+
+    - name: Compare performance results
+      run: |
+        python -c "
+        import json
+        import sys
+        
+        with open('base-benchmark.json') as f:
+            base = json.load(f)
+        with open('pr-benchmark.json') as f:
+            pr = json.load(f)
+        
+        print('Performance Comparison:')
+        print('=' * 50)
+        
+        regression_found = False
+        for test_name in base['benchmarks']:
+            base_time = base['benchmarks'][test_name]['stats']['mean']
+            pr_time = pr['benchmarks'][test_name]['stats']['mean']
+            
+            change_pct = ((pr_time - base_time) / base_time) * 100
+            
+            if change_pct > 10:  # 10% regression threshold
+                print(f'❌ {test_name}: {change_pct:+.1f}% slower')
+                regression_found = True
+            elif change_pct < -5:  # 5% improvement
+                print(f'✅ {test_name}: {change_pct:+.1f}% faster')
+            else:
+                print(f'➡️ {test_name}: {change_pct:+.1f}% change')
+        
+        if regression_found:
+            print('\\n⚠️ Performance regressions detected!')
+            sys.exit(1)
+        else:
+            print('\\n✅ No significant performance regressions')
+        "
+
+  pr-summary:
+    name: PR Summary
+    runs-on: ubuntu-latest
+    needs: [pr-validation, quick-tests, code-coverage, dependency-check, performance-impact]
+    if: always()
+
+    steps:
+    - name: Generate PR summary
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const results = {
+            validation: '${{ needs.pr-validation.result }}',
+            quickTests: '${{ needs.quick-tests.result }}',
+            coverage: '${{ needs.code-coverage.result }}',
+            dependencies: '${{ needs.dependency-check.result }}',
+            performance: '${{ needs.performance-impact.result }}'
+          };
+          
+          const statusEmoji = {
+            success: '✅',
+            failure: '❌',
+            cancelled: '⏹️',
+            skipped: '⏭️'
+          };
+          
+          let summary = '## PR Check Summary\n\n';
+          summary += `| Check | Status |\n`;
+          summary += `|-------|--------|\n`;
+          summary += `| Validation | ${statusEmoji[results.validation] || '❓'} ${results.validation} |\n`;
+          summary += `| Quick Tests | ${statusEmoji[results.quickTests] || '❓'} ${results.quickTests} |\n`;
+          summary += `| Code Coverage | ${statusEmoji[results.coverage] || '❓'} ${results.coverage} |\n`;
+          summary += `| Dependencies | ${statusEmoji[results.dependencies] || '❓'} ${results.dependencies} |\n`;
+          summary += `| Performance | ${statusEmoji[results.performance] || '❓'} ${results.performance} |\n`;
+          
+          const allPassed = Object.values(results).every(result => result === 'success');
+          
+          if (allPassed) {
+            summary += '\n🎉 All checks passed! This PR is ready for review.';
+          } else {
+            summary += '\n⚠️ Some checks failed. Please review and fix the issues before merging.';
+          }
+          
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: summary
+          });

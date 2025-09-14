@@ -1,0 +1,272 @@
+/* Educational Tooltip Styles */
+
+.educational-tooltip-container {
+  position: relative;
+  display: inline-block;
+}
+
+.educational-tooltip-trigger {
+  position: relative;
+  cursor: help;
+  border-bottom: 1px dotted #007bff;
+  color: #007bff;
+}
+
+.educational-indicator {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  background-color: #007bff;
+  color: white;
+  border-radius: 50%;
+  font-size: 10px;
+  line-height: 14px;
+  text-align: center;
+  margin-left: 4px;
+  font-weight: bold;
+}
+
+.educational-tooltip-content {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  padding: 16px;
+  width: 320px;
+  max-width: 90vw;
+  z-index: 1000;
+  font-size: 14px;
+  line-height: 1.4;
+  margin-bottom: 8px;
+}
+
+.educational-tooltip-content::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-top-color: white;
+}
+
+.educational-tooltip-loading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #666;
+}
+
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid #f3f3f3;
+  border-top: 2px solid #007bff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.educational-tooltip-error {
+  color: #dc3545;
+  font-size: 12px;
+}
+
+.concept-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #eee;
+}
+
+.concept-header h4 {
+  margin: 0;
+  font-size: 16px;
+  color: #333;
+}
+
+.difficulty-badge {
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.difficulty-badge.beginner {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.difficulty-badge.intermediate {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.difficulty-badge.advanced {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+.concept-description {
+  margin-bottom: 12px;
+}
+
+.concept-description p {
+  margin: 0;
+  color: #555;
+}
+
+.concept-formula {
+  margin-bottom: 12px;
+  padding: 8px;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+}
+
+.concept-formula strong {
+  display: block;
+  margin-bottom: 4px;
+  color: #333;
+}
+
+.concept-formula code {
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  color: #e83e8c;
+  background-color: #f1f3f4;
+  padding: 2px 4px;
+  border-radius: 3px;
+}
+
+.concept-example {
+  margin-bottom: 12px;
+  padding: 8px;
+  background-color: #e7f3ff;
+  border-left: 3px solid #007bff;
+  border-radius: 0 4px 4px 0;
+}
+
+.concept-example strong {
+  display: block;
+  margin-bottom: 4px;
+  color: #007bff;
+}
+
+.concept-example p {
+  margin: 0;
+  font-size: 13px;
+  color: #555;
+}
+
+.learning-steps {
+  margin-bottom: 12px;
+}
+
+.learning-steps strong {
+  display: block;
+  margin-bottom: 6px;
+  color: #333;
+}
+
+.learning-steps ul {
+  margin: 0;
+  padding-left: 16px;
+}
+
+.learning-steps li {
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 2px;
+}
+
+.related-concepts strong {
+  display: block;
+  margin-bottom: 6px;
+  color: #333;
+}
+
+.related-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.related-tag {
+  padding: 2px 6px;
+  background-color: #e9ecef;
+  color: #495057;
+  border-radius: 10px;
+  font-size: 10px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.related-tag:hover {
+  background-color: #dee2e6;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .educational-tooltip-content {
+    width: 280px;
+    font-size: 13px;
+  }
+  
+  .concept-header h4 {
+    font-size: 14px;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .educational-tooltip-content {
+    background: #2d3748;
+    border-color: #4a5568;
+    color: #e2e8f0;
+  }
+  
+  .concept-header {
+    border-bottom-color: #4a5568;
+  }
+  
+  .concept-header h4 {
+    color: #e2e8f0;
+  }
+  
+  .concept-description p {
+    color: #cbd5e0;
+  }
+  
+  .concept-formula {
+    background-color: #4a5568;
+  }
+  
+  .concept-example {
+    background-color: #2c5282;
+    border-left-color: #3182ce;
+  }
+  
+  .learning-steps li {
+    color: #a0aec0;
+  }
+  
+  .related-tag {
+    background-color: #4a5568;
+    color: #e2e8f0;
+  }
+  
+  .related-tag:hover {
+    background-color: #718096;
+  }
+}

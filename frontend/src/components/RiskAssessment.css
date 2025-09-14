@@ -1,0 +1,752 @@
+/* Risk Assessment Component Styles */
+
+.risk-assessment-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+}
+
+/* Mode Selector */
+.mode-selector {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 30px;
+  border-bottom: 2px solid #e0e0e0;
+  padding-bottom: 10px;
+}
+
+.mode-selector button {
+  padding: 10px 20px;
+  border: none;
+  background: #f5f5f5;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.mode-selector button:hover {
+  background: #e0e0e0;
+}
+
+.mode-selector button.active {
+  background: #2196F3;
+  color: white;
+}
+
+/* Error Message */
+.error-message {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 15px;
+  background: #ffebee;
+  border: 1px solid #f44336;
+  border-radius: 8px;
+  color: #c62828;
+  margin-bottom: 20px;
+}
+
+.error-icon {
+  font-size: 18px;
+}
+
+/* Input Section */
+.input-section {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 30px;
+}
+
+.input-group {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.input-group input {
+  flex: 1;
+  padding: 12px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 16px;
+  transition: border-color 0.3s ease;
+}
+
+.input-group input:focus {
+  outline: none;
+  border-color: #2196F3;
+}
+
+.assess-button {
+  padding: 12px 24px;
+  background: #2196F3;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.3s ease;
+  white-space: nowrap;
+}
+
+.assess-button:hover:not(:disabled) {
+  background: #1976D2;
+}
+
+.assess-button:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.options {
+  display: flex;
+  gap: 20px;
+}
+
+.options label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+/* Assessment Results */
+.stock-assessment,
+.portfolio-assessment {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.assessment-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.assessment-header h3 {
+  margin: 0;
+  font-size: 24px;
+}
+
+.overall-risk {
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-weight: bold;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.overall-risk.risk-low {
+  background: rgba(76, 175, 80, 0.2);
+  color: #2e7d32;
+  border: 2px solid #4caf50;
+}
+
+.overall-risk.risk-moderate {
+  background: rgba(255, 152, 0, 0.2);
+  color: #ef6c00;
+  border: 2px solid #ff9800;
+}
+
+.overall-risk.risk-high {
+  background: rgba(244, 67, 54, 0.2);
+  color: #c62828;
+  border: 2px solid #f44336;
+}
+
+.overall-risk.risk-very_high {
+  background: rgba(156, 39, 176, 0.2);
+  color: #7b1fa2;
+  border: 2px solid #9c27b0;
+}
+
+/* Risk Score */
+.risk-score {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 30px;
+  background: #f8f9fa;
+}
+
+.score-circle {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.score-value {
+  font-size: 36px;
+  font-weight: bold;
+}
+
+.score-label {
+  font-size: 12px;
+  opacity: 0.9;
+}
+
+.score-description {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+}
+
+/* Risk Warnings */
+.risk-warnings {
+  padding: 20px;
+  background: #fff3e0;
+  border-left: 4px solid #ff9800;
+  margin: 20px;
+  border-radius: 8px;
+}
+
+.risk-warnings h4 {
+  margin: 0 0 15px 0;
+  color: #ef6c00;
+}
+
+.risk-warnings ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.warning-item {
+  margin-bottom: 8px;
+  color: #bf360c;
+}
+
+/* Risk Metrics */
+.risk-metrics {
+  padding: 20px;
+}
+
+.risk-metrics h4 {
+  margin: 0 0 20px 0;
+  color: #333;
+}
+
+.risk-metric {
+  padding: 15px;
+  margin-bottom: 15px;
+  border-radius: 8px;
+  border-left: 4px solid;
+}
+
+.risk-metric.risk-low {
+  background: #e8f5e8;
+  border-left-color: #4caf50;
+}
+
+.risk-metric.risk-moderate {
+  background: #fff3e0;
+  border-left-color: #ff9800;
+}
+
+.risk-metric.risk-high {
+  background: #ffebee;
+  border-left-color: #f44336;
+}
+
+.risk-metric.risk-very_high {
+  background: #f3e5f5;
+  border-left-color: #9c27b0;
+}
+
+.risk-metric-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.risk-metric-name {
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.risk-level-badge {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: bold;
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.risk-metric-description {
+  margin-bottom: 8px;
+  color: #555;
+}
+
+.risk-metric-impact {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 8px;
+}
+
+.risk-metric-mitigation {
+  font-size: 14px;
+  color: #444;
+  background: rgba(255, 255, 255, 0.5);
+  padding: 8px;
+  border-radius: 4px;
+}
+
+/* Correlation Analysis */
+.correlation-analysis {
+  padding: 20px;
+  background: #f5f5f5;
+  margin: 20px;
+  border-radius: 8px;
+}
+
+.correlation-analysis h4 {
+  margin: 0 0 15px 0;
+  color: #333;
+}
+
+.correlation-data {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+}
+
+.correlation-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px;
+  background: white;
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Scenario Analysis */
+.scenario-analysis {
+  padding: 20px;
+}
+
+.scenario-analysis h4 {
+  margin: 0 0 20px 0;
+  color: #333;
+}
+
+.scenarios {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 15px;
+}
+
+.scenario-item {
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+}
+
+.scenario-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.scenario-name {
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.scenario-probability {
+  font-size: 12px;
+  background: #2196F3;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+.scenario-returns {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.return-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px;
+  background: white;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.return-item .positive {
+  color: #4caf50;
+  font-weight: bold;
+}
+
+.return-item .negative {
+  color: #f44336;
+  font-weight: bold;
+}
+
+.scenario-description {
+  font-size: 13px;
+  color: #666;
+  font-style: italic;
+}
+
+/* Mitigation Suggestions */
+.mitigation-suggestions {
+  padding: 20px;
+  background: #e8f5e8;
+  border-left: 4px solid #4caf50;
+  margin: 20px;
+  border-radius: 8px;
+}
+
+.mitigation-suggestions h4 {
+  margin: 0 0 15px 0;
+  color: #2e7d32;
+}
+
+.mitigation-suggestions ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.suggestion-item {
+  margin-bottom: 8px;
+  color: #1b5e20;
+}
+
+/* Portfolio Specific Styles */
+.portfolio-builder {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 30px;
+}
+
+.add-position {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr auto;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.add-position input {
+  padding: 10px;
+  border: 2px solid #e0e0e0;
+  border-radius: 6px;
+}
+
+.add-position button {
+  padding: 10px 20px;
+  background: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.positions-list {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.position-item {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr auto;
+  gap: 10px;
+  padding: 10px;
+  background: #f8f9fa;
+  border-radius: 6px;
+  margin-bottom: 8px;
+  align-items: center;
+}
+
+.position-item button {
+  padding: 5px 10px;
+  background: #f44336;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.portfolio-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  padding: 20px;
+  background: #f8f9fa;
+}
+
+.summary-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 15px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.risk-breakdown {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 15px;
+  padding: 20px;
+}
+
+.risk-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+}
+
+.risk-item .high-risk {
+  color: #f44336;
+  font-weight: bold;
+}
+
+.risk-item .low-risk {
+  color: #4caf50;
+  font-weight: bold;
+}
+
+.sector-concentration {
+  padding: 20px;
+}
+
+.sector-chart {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sector-item {
+  display: grid;
+  grid-template-columns: 120px 1fr 60px;
+  gap: 15px;
+  align-items: center;
+}
+
+.sector-name {
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.sector-bar {
+  height: 20px;
+  background: #e0e0e0;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.sector-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #2196F3, #21CBF3);
+  transition: width 0.3s ease;
+}
+
+.sector-weight {
+  font-size: 14px;
+  font-weight: 500;
+  text-align: right;
+}
+
+.positions-table {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.position-row {
+  display: grid;
+  grid-template-columns: 80px 80px 120px 60px;
+  gap: 15px;
+  padding: 12px;
+  background: #f8f9fa;
+  border-radius: 6px;
+  align-items: center;
+}
+
+.position-symbol {
+  font-weight: 600;
+}
+
+.position-weight {
+  font-size: 14px;
+}
+
+.position-risk {
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.position-score {
+  font-weight: 600;
+  text-align: center;
+}
+
+/* Scenario Mode */
+.scenario-builder {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 30px;
+}
+
+.add-symbol {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.add-symbol input {
+  flex: 1;
+  padding: 10px;
+  border: 2px solid #e0e0e0;
+  border-radius: 6px;
+}
+
+.add-symbol button {
+  padding: 10px 20px;
+  background: #2196F3;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.symbols-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.symbol-tag {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: #e3f2fd;
+  border: 1px solid #2196F3;
+  border-radius: 16px;
+  font-size: 14px;
+  color: #1976D2;
+}
+
+.symbol-tag button {
+  background: none;
+  border: none;
+  color: #1976D2;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 0;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.symbol-tag button:hover {
+  background: rgba(25, 118, 210, 0.1);
+}
+
+.scenario-results {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+}
+
+.symbol-scenarios {
+  margin-bottom: 30px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.symbol-scenarios:last-child {
+  border-bottom: none;
+}
+
+.symbol-scenarios h5 {
+  margin: 0 0 15px 0;
+  color: #333;
+  font-size: 18px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .risk-assessment-container {
+    padding: 10px;
+  }
+  
+  .input-group {
+    flex-direction: column;
+  }
+  
+  .assessment-header {
+    flex-direction: column;
+    gap: 15px;
+    text-align: center;
+  }
+  
+  .risk-score {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .correlation-data {
+    grid-template-columns: 1fr;
+  }
+  
+  .scenarios {
+    grid-template-columns: 1fr;
+  }
+  
+  .add-position {
+    grid-template-columns: 1fr;
+  }
+  
+  .position-item {
+    grid-template-columns: 1fr;
+    text-align: center;
+  }
+  
+  .position-row {
+    grid-template-columns: 1fr;
+    text-align: center;
+  }
+}
