@@ -1,6 +1,9 @@
 from pydantic_settings import BaseSettings
 from typing import List, Optional
 from functools import lru_cache
+import os
+import json
+from google.cloud import secretmanager
 
 class Settings(BaseSettings):
     # API Configuration
@@ -82,11 +85,92 @@ class Settings(BaseSettings):
                 return
             return super().prepare_field(field)
 
+def load_secret(secret_name: str, project_id: str) -> Optional[str]:
+    """Load secret from Google Secret Manager."""
+    try:
+        client = secretmanager.SecretManagerServiceClient()
+        name = f"projects/{project_id}/secrets/{secret_name}/versions/latest"
+        response = client.access_secret_version(request={"name": name})
+        return response.payload.data.decode("UTF-8")
+    except Exception as e:
+        print(f"Warning: Could not load secret {secret_name}: {e}")
+        return None
+
+def load_secrets_for_environment(environment: str, project_id: str) -> dict:
+    """Load all secrets for the given environment."""
+    secrets = {}
+    
+    if environment in ["production", "staging"]:
+        # Load app secrets
+        app_secrets_data = load_secret(f"settlers-of-stock-app-secrets-{environment}", project_id)
+        if app_secrets_data:
+            app_secrets = json.loads(app_secrets_data)
+            secrets.update(app_secrets)
+        
+        # Load database URL
+        database_url = load_secret(f"settlers-of-stock-database-url-{environment}", project_id)
+        if database_url:
+            secrets["DATABASE_URL"] = database_url
+        
+        # Load Redis URL
+        redis_url = load_secret(f"settlers-of-stock-redis-url-{environment}", project_id)
+        if redis_url:
+            secrets["REDIS_URL"] = redis_url
+        
+        # Load API keys
+        api_keys_data = load_secret(f"settlers-of-stock-api-keys-{environment}", project_id)
+        if api_keys_data:
+            api_keys = json.loads(api_keys_data)
+            secrets["ALPHA_VANTAGE_API_KEY"] = api_keys.get("alpha_vantage", "")
+            secrets["NEWS_API_KEY"] = api_keys.get("news_api", "")
+        
+        # Load Reddit credentials
+        reddit_creds_data = load_secret(f"settlers-of-stock-reddit-credentials-{environment}", project_id)
+        if reddit_creds_data:
+            reddit_creds = json.loads(reddit_creds_data)
+            secrets["REDDIT_CLIENT_ID"] = reddit_creds.get("client_id", "")
+            secrets["REDDIT_CLIENT_SECRET"] = reddit_creds.get("client_secret", "")
+        
+        # Load SMTP configuration
+        smtp_config_data = load_secret(f"settlers-of-stock-smtp-config-{environment}", project_id)
+        if smtp_config_data:
+            smtp_config = json.loads(smtp_config_data)
+            secrets["SMTP_HOST"] = smtp_config.get("host", "")
+            secrets["SMTP_PORT"] = smtp_config.get("port", 587)
+            secrets["SMTP_USER"] = smtp_config.get("user", "")
+            secrets["SMTP_PASSWORD"] = smtp_config.get("password", "")
+            secrets["SMTP_TLS"] = smtp_config.get("tls", True)
+    
+    return secrets
+
 @lru_cache()
 def get_settings() -> Settings:
     """Get cached settings instance."""
-    import os
     env = os.getenv("ENVIRONMENT", "development")
+    project_id = os.getenv("GCP_PROJECT_ID")
+    
+    # Load environment-specific .env file
+    env_file = f".env.{env}" if env != "development" else ".env"
+    
+    # Create settings instance
     if env == "test":
-        return Settings(_env_file=".env.test")
-    return Settings()
+        settings = Settings(_env_file=".env.test")
+    else:
+        settings = Settings(_env_file=env_file)
+    
+    # Load secrets from Google Secret Manager for production/staging
+    if env in ["production", "staging"] and project_id:
+        secrets = load_secrets_for_environment(env, project_id)
+        
+        # Override settings with secrets
+        for key, value in secrets.items():
+            if hasattr(settings, key.lower()):
+                setattr(settings, key.lower(), value)
+            elif key == "SECRET_KEY":
+                settings.SECRET_KEY = value
+            elif key == "DATABASE_URL":
+                settings.DATABASE_URL = value
+            elif key == "REDIS_URL":
+                settings.REDIS_URL = value
+    
+    return settings

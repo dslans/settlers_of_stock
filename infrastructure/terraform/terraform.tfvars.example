@@ -1,0 +1,66 @@
+# Terraform variables example for Settlers of Stock
+# Copy this file to terraform.tfvars and update with your actual values
+
+# Project configuration
+project_id = "your-gcp-project-id"
+project_name = "settlers-of-stock"
+environment = "production"
+region = "us-central1"
+zone = "us-central1-a"
+alternative_zone = "us-central1-b"
+
+# Database configuration
+database_name = "settlers_of_stock"
+database_user = "app_user"
+database_password = "CHANGE_ME_TO_SECURE_PASSWORD"  # Generate with: openssl rand -base64 32
+db_tier = "db-f1-micro"  # Options: db-f1-micro, db-g1-small, db-n1-standard-1, etc.
+db_disk_size = 20
+db_max_disk_size = 100
+
+# Redis configuration
+redis_tier = "STANDARD_HA"  # Options: BASIC, STANDARD_HA
+redis_memory_size = 1
+
+# GitHub configuration for Cloud Build
+github_owner = "your-github-username"
+github_repo = "settlers-of-stock"
+
+# Admin configuration
+admin_email = "admin@yourdomain.com"
+
+# Application secrets
+app_secret_key = "CHANGE_ME_TO_SECURE_SECRET"  # Generate with: openssl rand -base64 64
+
+# External API keys (optional - leave empty if not using)
+alpha_vantage_api_key = ""  # Get from: https://www.alphavantage.co/support/#api-key
+news_api_key = ""           # Get from: https://newsapi.org/register
+reddit_client_id = ""       # Get from: https://www.reddit.com/prefs/apps
+reddit_client_secret = ""   # Get from: https://www.reddit.com/prefs/apps
+
+# SMTP configuration (optional - for email notifications)
+smtp_host = ""              # e.g., "smtp.gmail.com"
+smtp_port = 587
+smtp_user = ""              # Your email address
+smtp_password = ""          # App password for Gmail
+smtp_tls = true
+
+# Monitoring configuration
+app_domain = "your-app-domain.com"  # Your custom domain (optional)
+slack_webhook_url = ""              # Slack webhook for alerts (optional)
+
+# Example values for different environments:
+
+# Development/Testing:
+# db_tier = "db-f1-micro"
+# redis_tier = "BASIC"
+# redis_memory_size = 1
+
+# Production:
+# db_tier = "db-n1-standard-1"
+# redis_tier = "STANDARD_HA"
+# redis_memory_size = 2
+
+# High-traffic production:
+# db_tier = "db-n1-standard-2"
+# redis_tier = "STANDARD_HA"
+# redis_memory_size = 4

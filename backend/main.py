@@ -12,6 +12,7 @@ from pydantic import BaseModel
 import uvicorn
 
 from app.core.config import get_settings
+from app.core.monitoring import request_metrics, health_checker, log_performance_summary
 from app.api.stocks import router as stocks_router
 from app.api.auth import router as auth_router
 from app.api.chat import router as chat_router
@@ -122,15 +123,16 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Request logging middleware
+# Request logging and monitoring middleware
 @app.middleware("http")
-async def log_requests(request: Request, call_next):
+async def log_and_monitor_requests(request: Request, call_next):
     start_time = datetime.utcnow()
     
     # Log request
     logger.info(f"Request: {request.method} {request.url}")
     
-    response = await call_next(request)
+    # Track metrics
+    response = await request_metrics.track_request(request, call_next)
     
     # Log response
     process_time = (datetime.utcnow() - start_time).total_seconds()
@@ -164,6 +166,7 @@ async def startup_event():
 @app.on_event("shutdown")
 async def shutdown_event():
     logger.info("Shutting down Settlers of Stock API...")
+    log_performance_summary()
 
 # Health endpoints
 @app.get("/", response_model=Dict[str, str])
@@ -195,15 +198,24 @@ async def status_check():
     Detailed status endpoint with dependency checks.
     Provides comprehensive service status information.
     """
-    # Check dependencies (placeholder for now)
+    # Check dependencies
+    db_health = await health_checker.check_database_health()
+    redis_health = await health_checker.check_redis_health()
+    apis_health = await health_checker.check_external_apis_health()
+    
     dependencies = {
-        "database": "not_configured",
-        "redis": "not_configured",
-        "external_apis": "not_configured"
+        "database": db_health["status"],
+        "redis": redis_health["status"],
+        "external_apis": apis_health["status"]
     }
     
+    # Calculate overall status
+    overall_status = "operational"
+    if any(status == "unhealthy" for status in dependencies.values()):
+        overall_status = "degraded"
+    
     return StatusResponse(
-        status="operational",
+        status=overall_status,
         service="settlers-of-stock-api",
         version="1.0.0",
         timestamp=datetime.utcnow(),

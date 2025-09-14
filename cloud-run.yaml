@@ -1,0 +1,93 @@
+# Cloud Run service configuration (alternative to App Engine)
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: settlers-of-stock-backend
+  annotations:
+    run.googleapis.com/ingress: all
+    run.googleapis.com/execution-environment: gen2
+spec:
+  template:
+    metadata:
+      annotations:
+        run.googleapis.com/cpu-throttling: "false"
+        run.googleapis.com/execution-environment: gen2
+        autoscaling.knative.dev/maxScale: "10"
+        autoscaling.knative.dev/minScale: "1"
+    spec:
+      containerConcurrency: 100
+      timeoutSeconds: 300
+      containers:
+      - image: gcr.io/PROJECT_ID/settlers-of-stock-backend:latest
+        ports:
+        - containerPort: 8000
+        env:
+        - name: ENVIRONMENT
+          value: "production"
+        - name: DEBUG
+          value: "false"
+        - name: GCP_PROJECT_ID
+          value: "PROJECT_ID"
+        - name: GCP_REGION
+          value: "us-central1"
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: database-url
+              key: url
+        - name: REDIS_URL
+          valueFrom:
+            secretKeyRef:
+              name: redis-url
+              key: url
+        - name: SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: secret-key
+        - name: ALPHA_VANTAGE_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: api-keys
+              key: alpha-vantage
+        - name: NEWS_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: api-keys
+              key: news-api
+        - name: REDDIT_CLIENT_ID
+          valueFrom:
+            secretKeyRef:
+              name: reddit-credentials
+              key: client-id
+        - name: REDDIT_CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: reddit-credentials
+              key: client-secret
+        resources:
+          limits:
+            cpu: "2"
+            memory: "4Gi"
+          requests:
+            cpu: "1"
+            memory: "2Gi"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 2
+  traffic:
+  - percent: 100
+    latestRevision: true
