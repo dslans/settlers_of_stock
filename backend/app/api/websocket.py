@@ -12,7 +12,7 @@ import asyncio
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends, HTTPException, status
 from fastapi.security import HTTPBearer
 from pydantic import BaseModel, ValidationError
-import jwt
+from jose import jwt
 
 from app.services.chat_service import ChatService, ChatMessage, ChatResponse
 from app.services.vertex_ai_service import AnalysisResult

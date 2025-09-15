@@ -12,10 +12,10 @@ terraform {
     }
   }
   
-  backend "gcs" {
-    bucket = "settlers-of-stock-terraform-state"
-    prefix = "terraform/state"
-  }
+  # backend "gcs" {
+  #   bucket = "settlers-of-stock-terraform-state"
+  #   prefix = "terraform/state"
+  # }
 }
 
 # Configure the Google Cloud Provider
@@ -34,6 +34,7 @@ provider "google-beta" {
 # Local variables
 locals {
   services = [
+    "compute.googleapis.com",
     "sqladmin.googleapis.com",
     "redis.googleapis.com",
     "storage.googleapis.com",
@@ -45,7 +46,8 @@ locals {
     "logging.googleapis.com",
     "aiplatform.googleapis.com",
     "bigquery.googleapis.com",
-    "firestore.googleapis.com"
+    "firestore.googleapis.com",
+    "servicenetworking.googleapis.com"
   ]
 }
 
@@ -147,7 +149,7 @@ resource "google_redis_instance" "cache" {
   region         = var.region
   
   location_id             = var.zone
-  alternative_location_id = var.alternative_zone
+  # alternative_location_id not supported for BASIC tier
   
   authorized_network = google_compute_network.vpc.id
   connect_mode       = "PRIVATE_SERVICE_ACCESS"
@@ -211,6 +213,28 @@ resource "google_service_networking_connection" "private_vpc_connection" {
   network                 = google_compute_network.vpc.id
   service                 = "servicenetworking.googleapis.com"
   reserved_peering_ranges = [google_compute_global_address.private_ip_address.name]
+}
+
+# Terraform state bucket (for future remote state)
+resource "google_storage_bucket" "terraform_state" {
+  name          = "${var.project_id}-terraform-state"
+  location      = var.region
+  force_destroy = false
+  
+  uniform_bucket_level_access = true
+  
+  versioning {
+    enabled = true
+  }
+  
+  lifecycle_rule {
+    condition {
+      age = 90
+    }
+    action {
+      type = "Delete"
+    }
+  }
 }
 
 # Cloud Storage buckets
@@ -317,7 +341,7 @@ resource "google_firestore_database" "database" {
 
 # IAM Service Account for the application
 resource "google_service_account" "app_service_account" {
-  account_id   = "${var.project_name}-app-${var.environment}"
+  account_id   = "settlers-app-prod"
   display_name = "Settlers of Stock Application Service Account"
   description  = "Service account for the Settlers of Stock application"
 }
@@ -330,7 +354,7 @@ resource "google_project_iam_member" "app_service_account_bindings" {
     "roles/storage.objectAdmin",
     "roles/bigquery.dataEditor",
     "roles/bigquery.jobUser",
-    "roles/firestore.user",
+    "roles/datastore.user",
     "roles/aiplatform.user",
     "roles/secretmanager.secretAccessor",
     "roles/monitoring.metricWriter",
@@ -342,25 +366,25 @@ resource "google_project_iam_member" "app_service_account_bindings" {
   member  = "serviceAccount:${google_service_account.app_service_account.email}"
 }
 
-# Cloud Build trigger
-resource "google_cloudbuild_trigger" "main" {
-  name        = "${var.project_name}-build-${var.environment}"
-  description = "Build and deploy Settlers of Stock application"
-  
-  github {
-    owner = var.github_owner
-    name  = var.github_repo
-    push {
-      branch = var.environment == "production" ? "main" : "develop"
-    }
-  }
-  
-  filename = "cloudbuild.yaml"
-  
-  substitutions = {
-    _ENVIRONMENT = var.environment
-    _GCP_REGION  = var.region
-  }
-  
-  depends_on = [google_project_service.apis]
-}
+# Cloud Build trigger (disabled for initial deployment)
+# resource "google_cloudbuild_trigger" "main" {
+#   name        = "${var.project_name}-build-${var.environment}"
+#   description = "Build and deploy Settlers of Stock application"
+#   
+#   github {
+#     owner = var.github_owner
+#     name  = var.github_repo
+#     push {
+#       branch = var.environment == "production" ? "main" : "develop"
+#     }
+#   }
+#   
+#   filename = "cloudbuild.yaml"
+#   
+#   substitutions = {
+#     _ENVIRONMENT = var.environment
+#     _GCP_REGION  = var.region
+#   }
+#   
+#   depends_on = [google_project_service.apis]
+# }

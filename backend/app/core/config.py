@@ -18,6 +18,10 @@ class Settings(BaseSettings):
     REDIS_HOST: str = "localhost"
     REDIS_PORT: int = 6379
     
+    # Skip external services for initial deployment
+    SKIP_DATABASE: bool = False
+    SKIP_REDIS: bool = False
+    
     # GCP Configuration
     GCP_PROJECT_ID: Optional[str] = None
     GCP_REGION: str = "us-central1"

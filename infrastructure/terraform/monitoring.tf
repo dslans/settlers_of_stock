@@ -64,8 +64,8 @@ resource "google_monitoring_alert_policy" "uptime_alert" {
     condition_threshold {
       filter          = "metric.type=\"monitoring.googleapis.com/uptime_check/check_passed\" AND resource.type=\"uptime_url\" AND resource.labels.project_id=\"${var.project_id}\""
       duration        = "300s"
-      comparison      = "COMPARISON_EQUAL"
-      threshold_value = 0
+      comparison      = "COMPARISON_LT"
+      threshold_value = 1
       
       aggregations {
         alignment_period   = "300s"
@@ -96,7 +96,7 @@ resource "google_monitoring_alert_policy" "error_rate_alert" {
     condition_threshold {
       filter          = "resource.type=\"gae_app\" AND metric.type=\"appengine.googleapis.com/http/server/response_count\" AND metric.labels.response_code>=500"
       duration        = "300s"
-      comparison      = "COMPARISON_GREATER_THAN"
+      comparison      = "COMPARISON_GT"
       threshold_value = 10
       
       aggregations {
@@ -129,7 +129,7 @@ resource "google_monitoring_alert_policy" "latency_alert" {
     condition_threshold {
       filter          = "resource.type=\"gae_app\" AND metric.type=\"appengine.googleapis.com/http/server/response_latencies\""
       duration        = "300s"
-      comparison      = "COMPARISON_GREATER_THAN"
+      comparison      = "COMPARISON_GT"
       threshold_value = 2000  # 2 seconds
       
       aggregations {
@@ -162,7 +162,7 @@ resource "google_monitoring_alert_policy" "database_alert" {
     condition_threshold {
       filter          = "resource.type=\"cloudsql_database\" AND metric.type=\"cloudsql.googleapis.com/database/network/connections\""
       duration        = "300s"
-      comparison      = "COMPARISON_LESS_THAN"
+      comparison      = "COMPARISON_LT"
       threshold_value = 1
       
       aggregations {
@@ -195,7 +195,7 @@ resource "google_monitoring_alert_policy" "redis_memory_alert" {
     condition_threshold {
       filter          = "resource.type=\"redis_instance\" AND metric.type=\"redis.googleapis.com/stats/memory/usage_ratio\""
       duration        = "300s"
-      comparison      = "COMPARISON_GREATER_THAN"
+      comparison      = "COMPARISON_GT"
       threshold_value = 0.8
       
       aggregations {
@@ -217,123 +217,42 @@ resource "google_monitoring_alert_policy" "redis_memory_alert" {
   depends_on = [google_project_service.apis]
 }
 
-# Custom dashboard for application metrics
-resource "google_monitoring_dashboard" "app_dashboard" {
-  dashboard_json = jsonencode({
-    displayName = "Settlers of Stock - Application Dashboard"
-    mosaicLayout = {
-      tiles = [
-        {
-          width  = 6
-          height = 4
-          widget = {
-            title = "Request Rate"
-            xyChart = {
-              dataSets = [{
-                timeSeriesQuery = {
-                  timeSeriesFilter = {
-                    filter = "resource.type=\"gae_app\" AND metric.type=\"appengine.googleapis.com/http/server/request_count\""
-                    aggregation = {
-                      alignmentPeriod    = "60s"
-                      perSeriesAligner   = "ALIGN_RATE"
-                      crossSeriesReducer = "REDUCE_SUM"
-                    }
-                  }
-                }
-                plotType = "LINE"
-              }]
-              yAxis = {
-                label = "Requests/sec"
-                scale = "LINEAR"
-              }
-            }
-          }
-        },
-        {
-          width  = 6
-          height = 4
-          xPos   = 6
-          widget = {
-            title = "Response Latency (95th percentile)"
-            xyChart = {
-              dataSets = [{
-                timeSeriesQuery = {
-                  timeSeriesFilter = {
-                    filter = "resource.type=\"gae_app\" AND metric.type=\"appengine.googleapis.com/http/server/response_latencies\""
-                    aggregation = {
-                      alignmentPeriod    = "60s"
-                      perSeriesAligner   = "ALIGN_DELTA"
-                      crossSeriesReducer = "REDUCE_PERCENTILE_95"
-                    }
-                  }
-                }
-                plotType = "LINE"
-              }]
-              yAxis = {
-                label = "Latency (ms)"
-                scale = "LINEAR"
-              }
-            }
-          }
-        },
-        {
-          width  = 6
-          height = 4
-          yPos   = 4
-          widget = {
-            title = "Error Rate"
-            xyChart = {
-              dataSets = [{
-                timeSeriesQuery = {
-                  timeSeriesFilter = {
-                    filter = "resource.type=\"gae_app\" AND metric.type=\"appengine.googleapis.com/http/server/response_count\" AND metric.labels.response_code>=400"
-                    aggregation = {
-                      alignmentPeriod    = "60s"
-                      perSeriesAligner   = "ALIGN_RATE"
-                      crossSeriesReducer = "REDUCE_SUM"
-                    }
-                  }
-                }
-                plotType = "LINE"
-              }]
-              yAxis = {
-                label = "Errors/sec"
-                scale = "LINEAR"
-              }
-            }
-          }
-        },
-        {
-          width  = 6
-          height = 4
-          xPos   = 6
-          yPos   = 4
-          widget = {
-            title = "Database Connections"
-            xyChart = {
-              dataSets = [{
-                timeSeriesQuery = {
-                  timeSeriesFilter = {
-                    filter = "resource.type=\"cloudsql_database\" AND metric.type=\"cloudsql.googleapis.com/database/network/connections\""
-                    aggregation = {
-                      alignmentPeriod    = "60s"
-                      perSeriesAligner   = "ALIGN_MEAN"
-                      crossSeriesReducer = "REDUCE_SUM"
-                    }
-                  }
-                }
-                plotType = "LINE"
-              }]
-              yAxis = {
-                label = "Connections"
-                scale = "LINEAR"
-              }
-            }
-          }
-        }
-      ]
-    }
-  })
-  
-  depends_on = [google_project_service.apis]
-}
+# Custom dashboard for application metrics (disabled for initial deployment)
+# Will be enabled after App Engine is deployed
+# resource "google_monitoring_dashboard" "app_dashboard" {
+#   dashboard_json = jsonencode({
+#     displayName = "Settlers of Stock - Application Dashboard"
+#     mosaicLayout = {
+#       tiles = [
+#         {
+#           width  = 6
+#           height = 4
+#           widget = {
+#             title = "Request Rate"
+#             xyChart = {
+#               dataSets = [{
+#                 timeSeriesQuery = {
+#                   timeSeriesFilter = {
+#                     filter = "resource.type=\"gae_app\" AND metric.type=\"appengine.googleapis.com/http/server/request_count\""
+#                     aggregation = {
+#                       alignmentPeriod    = "60s"
+#                       perSeriesAligner   = "ALIGN_RATE"
+#                       crossSeriesReducer = "REDUCE_SUM"
+#                     }
+#                   }
+#                 }
+#                 plotType = "LINE"
+#               }]
+#               yAxis = {
+#                 label = "Requests/sec"
+#                 scale = "LINEAR"
+#               }
+#             }
+#           }
+#         }
+#       ]
+#     }
+#   })
+#   
+#   depends_on = [google_project_service.apis]
+# }

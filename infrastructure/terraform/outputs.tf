@@ -100,8 +100,8 @@ output "subnet_name" {
   value       = google_compute_subnetwork.subnet.name
 }
 
-# Cloud Build outputs
-output "cloud_build_trigger_id" {
-  description = "The Cloud Build trigger ID"
-  value       = google_cloudbuild_trigger.main.id
-}
+# Cloud Build outputs (disabled for initial deployment)
+# output "cloud_build_trigger_id" {
+#   description = "The Cloud Build trigger ID"
+#   value       = google_cloudbuild_trigger.main.id
+# }

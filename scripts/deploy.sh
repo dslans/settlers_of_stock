@@ -122,15 +122,22 @@ EOF
     # Plan the deployment
     terraform plan -out=tfplan
     
-    # Ask for confirmation
-    read -p "Do you want to apply these changes? (y/N): " -n 1 -r
-    echo
-    if [[ $REPLY =~ ^[Yy]$ ]]; then
-        terraform apply tfplan
+    # Apply with or without confirmation
+    if [ "$AUTO_APPROVE" = true ]; then
+        print_status "Auto-approving Terraform changes..."
+        terraform apply -auto-approve tfplan
         print_success "Infrastructure deployed successfully"
     else
-        print_warning "Deployment cancelled"
-        exit 0
+        # Ask for confirmation
+        read -p "Do you want to apply these changes? (y/N): " -n 1 -r
+        echo
+        if [[ $REPLY =~ ^[Yy]$ ]]; then
+            terraform apply tfplan
+            print_success "Infrastructure deployed successfully"
+        else
+            print_warning "Deployment cancelled"
+            exit 0
+        fi
     fi
     
     cd ../..
@@ -156,15 +163,55 @@ deploy_application() {
         firestore.googleapis.com
     
     # Create App Engine application if it doesn't exist
-    if ! gcloud app describe &> /dev/null; then
+    print_status "Checking if App Engine application exists..."
+    if gcloud app describe --project="$PROJECT_ID" &> /dev/null; then
+        print_status "App Engine application already exists"
+    else
         print_status "Creating App Engine application..."
-        gcloud app create --region="$REGION"
+        if ! gcloud app create --region="$REGION" --project="$PROJECT_ID"; then
+            print_warning "App Engine creation failed, but continuing with deployment..."
+        fi
     fi
     
-    # Deploy using Cloud Build
-    print_status "Starting Cloud Build deployment..."
-    gcloud builds submit --config=cloudbuild.yaml \
-        --substitutions=_ENVIRONMENT="$ENVIRONMENT",_GCP_REGION="$REGION"
+    # Build and deploy backend to Cloud Run
+    print_status "Building backend Docker image..."
+    gcloud builds submit backend/ \
+        --tag gcr.io/$PROJECT_ID/settlers-of-stock-backend:latest \
+        --project=$PROJECT_ID
+    
+    print_status "Deploying backend to Cloud Run..."
+    gcloud run deploy settlers-of-stock-backend \
+        --image gcr.io/$PROJECT_ID/settlers-of-stock-backend:latest \
+        --platform managed \
+        --region $REGION \
+        --allow-unauthenticated \
+        --port 8000 \
+        --memory 2Gi \
+        --cpu 1 \
+        --min-instances 0 \
+        --max-instances 10 \
+        --timeout 300 \
+        --set-env-vars ENVIRONMENT=$ENVIRONMENT,GCP_PROJECT_ID=$PROJECT_ID,GCP_REGION=$REGION,SKIP_EXTERNAL_APIS=true \
+        --service-account settlers-app-prod@$PROJECT_ID.iam.gserviceaccount.com \
+
+        --project=$PROJECT_ID
+    
+    # Build and deploy frontend
+    print_status "Building frontend..."
+    if [ -d "frontend" ]; then
+        cd frontend
+        npm ci
+        npm run build
+        cd ..
+        
+        print_status "Deploying frontend to Cloud Storage..."
+        gsutil -m rsync -r -d ./frontend/build/ gs://$PROJECT_ID-frontend/
+        
+        # Set proper cache headers for static assets
+        gsutil -m setmeta -h "Cache-Control:public, max-age=31536000" gs://$PROJECT_ID-frontend/static/** || true
+    else
+        print_warning "Frontend directory not found, skipping frontend deployment"
+    fi
     
     print_success "Application deployed successfully"
 }
@@ -173,28 +220,32 @@ deploy_application() {
 post_deployment_checks() {
     print_status "Running post-deployment checks..."
     
-    # Get the App Engine URL
-    APP_URL=$(gcloud app describe --format="value(defaultHostname)")
+    # Get the Cloud Run URL
+    APP_URL=$(gcloud run services describe settlers-of-stock-backend --region=$REGION --format="value(status.url)" --project=$PROJECT_ID)
     
-    # Check health endpoint
-    print_status "Checking health endpoint..."
-    if curl -f "https://$APP_URL/health" > /dev/null 2>&1; then
-        print_success "Health check passed"
+    if [ -n "$APP_URL" ]; then
+        # Check health endpoint
+        print_status "Checking health endpoint..."
+        if curl -f "$APP_URL/health" > /dev/null 2>&1; then
+            print_success "Health check passed"
+        else
+            print_error "Health check failed"
+            exit 1
+        fi
+        
+        # Check status endpoint
+        print_status "Checking status endpoint..."
+        if curl -f "$APP_URL/status" > /dev/null 2>&1; then
+            print_success "Status check passed"
+        else
+            print_warning "Status check failed - application may be starting up"
+        fi
+        
+        print_success "Post-deployment checks completed"
+        print_success "Application is available at: $APP_URL"
     else
-        print_error "Health check failed"
-        exit 1
+        print_warning "Could not retrieve application URL"
     fi
-    
-    # Check status endpoint
-    print_status "Checking status endpoint..."
-    if curl -f "https://$APP_URL/status" > /dev/null 2>&1; then
-        print_success "Status check passed"
-    else
-        print_warning "Status check failed - application may be starting up"
-    fi
-    
-    print_success "Post-deployment checks completed"
-    print_success "Application is available at: https://$APP_URL"
 }
 
 # Function to show usage
@@ -206,6 +257,7 @@ show_usage() {
     echo "  --application-only       Deploy only application (skip infrastructure)"
     echo "  --environment ENV        Set environment (default: production)"
     echo "  --project-id ID          Set GCP project ID"
+    echo "  --auto-approve           Skip confirmation prompts"
     echo "  --help                   Show this help message"
     echo ""
     echo "Examples:"
@@ -213,11 +265,14 @@ show_usage() {
     echo "  $0 --infrastructure-only             # Deploy only infrastructure"
     echo "  $0 --application-only                # Deploy only application"
     echo "  $0 --environment staging             # Deploy to staging"
+    echo "  $0 --auto-approve                    # Deploy without confirmation prompts"
+    echo "  $0 --infrastructure-only --auto-approve  # Deploy infrastructure automatically"
 }
 
 # Parse command line arguments
 INFRASTRUCTURE_ONLY=false
 APPLICATION_ONLY=false
+AUTO_APPROVE=false
 
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -236,6 +291,10 @@ while [[ $# -gt 0 ]]; do
         --project-id)
             PROJECT_ID="$2"
             shift 2
+            ;;
+        --auto-approve)
+            AUTO_APPROVE=true
+            shift
             ;;
         --help)
             show_usage

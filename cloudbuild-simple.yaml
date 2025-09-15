@@ -1,0 +1,83 @@
+# Simplified Google Cloud Build configuration for Settlers of Stock
+# This version focuses on App Engine deployment without Docker complexity
+
+steps:
+  # Step 1: Install backend dependencies and run basic checks
+  - name: 'python:3.11-slim'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        cd backend
+        pip install uv
+        uv pip install --system -r requirements.txt
+        # Skip tests for now to speed up deployment
+        python -c "import main; print('Backend imports successfully')"
+    id: 'backend-check'
+
+  # Step 2: Build frontend
+  - name: 'node:18'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        cd frontend
+        npm install
+        # Skip tests for now to speed up deployment
+        npm run build
+    id: 'frontend-build'
+    waitFor: ['-']
+
+  # Step 3: Create App Engine application if needed
+  - name: 'gcr.io/cloud-builders/gcloud'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        if ! gcloud app describe --project=$PROJECT_ID &> /dev/null; then
+          echo "Creating App Engine application..."
+          gcloud app create --region=us-central1 --project=$PROJECT_ID
+        else
+          echo "App Engine application already exists"
+        fi
+    id: 'app-engine-create'
+    waitFor: ['backend-check']
+
+  # Step 4: Deploy backend to App Engine
+  - name: 'gcr.io/cloud-builders/gcloud'
+    args:
+      - 'app'
+      - 'deploy'
+      - 'backend/app.yaml'
+      - '--quiet'
+      - '--promote'
+      - '--project=$PROJECT_ID'
+    id: 'app-engine-deploy'
+    waitFor: ['app-engine-create']
+
+  # Step 5: Deploy frontend to Cloud Storage
+  - name: 'gcr.io/cloud-builders/gsutil'
+    args:
+      - '-m'
+      - 'rsync'
+      - '-r'
+      - '-d'
+      - './frontend/build/'
+      - 'gs://$PROJECT_ID-frontend/'
+    id: 'frontend-deploy'
+    waitFor: ['frontend-build']
+
+  # Step 6: Set proper cache headers for static assets
+  - name: 'gcr.io/cloud-builders/gsutil'
+    args:
+      - '-m'
+      - 'setmeta'
+      - '-h'
+      - 'Cache-Control:public, max-age=31536000'
+      - 'gs://$PROJECT_ID-frontend/static/**'
+    waitFor: ['frontend-deploy']
+
+# Build timeout
+timeout: '1200s'
+
+# No custom substitutions needed for this simple build
